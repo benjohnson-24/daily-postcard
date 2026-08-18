@@ -14,6 +14,8 @@
   --ink-soft:   #6B5A55;
   --muted:      #A3918B;
   --line:       #E8D8CC;
+  --gold:       #CB9A5C;
+  --gold-soft:  #E4C99A;
 
   --r-lg: 28px;
   --r-md: 18px;
@@ -96,11 +98,11 @@ body{
   display:inline-flex;
   align-items:center;
   gap:13px;
-  padding:11px 15px;
+  padding:14px 19px;
   background:linear-gradient(155deg, #FFFEFB 0%, #FDF3EA 100%);
   border:3px solid var(--paper);
   outline:1.5px dashed rgba(198,96,110,.55);
-  outline-offset:-7px;
+  outline-offset:-8px;
   border-radius:4px;
   box-shadow:0 2px 6px -2px rgba(160,100,95,.35),
              0 12px 28px -14px rgba(190,80,100,.55),
@@ -119,22 +121,23 @@ body{
   line-height:1.12;
 }
 .wm-a{
-  font-size:clamp(11px, 3vw, 12.5px);
-  letter-spacing:.3em;
-  color:var(--muted);
+  font-size:clamp(13px, 3.4vw, 15px);
+  letter-spacing:.28em;
+  color:var(--ink-soft);
+  font-weight:600;
 }
 .wm-b{
-  font-size:clamp(15px, 4.2vw, 18px);
+  font-size:clamp(17px, 4.8vw, 21px);
   font-weight:600;
-  letter-spacing:.17em;
+  letter-spacing:.15em;
   color:var(--rose-deep);
   text-shadow:0 0 16px rgba(219,104,121,.35);
 }
 
 .wm-heart{
   flex:none;
-  width:17px;
-  height:17px;
+  width:20px;
+  height:20px;
   fill:var(--rose);
   filter:drop-shadow(0 0 5px rgba(224,96,118,.6));
   align-self:flex-end;
@@ -186,109 +189,7 @@ body{
   gap:10px;
 }
 
-.bell{
-  position:relative;
-  width:38px;
-  height:38px;
-  display:grid;
-  place-items:center;
-  border-radius:50%;
-  color:var(--rose-deep);
-  background:rgba(255,255,255,.82);
-  border:1px solid var(--edge-soft);
-  cursor:pointer;
-  box-shadow:0 1px 3px rgba(140,100,90,.12);
-  transition:background .16s ease, transform .16s ease;
-}
-.bell:hover{ background:#fff; transform:scale(1.06); }
-.bell svg{ width:19px; height:19px; }
-
-.bell-dot{
-  position:absolute;
-  top:4px; right:4px;
-  width:11px;
-  height:11px;
-  border-radius:50%;
-  background:#E0304C;
-  border:2px solid var(--paper);
-  box-shadow:0 0 8px rgba(224,48,76,.8);
-}
-
-.bell-pop{
-  position:absolute;
-  top:50px;
-  right:0;
-  width:min(300px, calc(100vw - 44px));
-  max-height:60vh;
-  overflow-y:auto;
-  background:var(--paper);
-  border:1px solid var(--edge-soft);
-  border-radius:var(--r-md);
-  box-shadow:var(--shadow-card), var(--glow-soft);
-  padding:14px;
-  animation:rise .2s ease both;
-}
-.bell-pop[hidden]{ display:none; }
-
-.bell-head{
-  margin:0 0 10px;
-  font-size:11px;
-  letter-spacing:.2em;
-  text-transform:uppercase;
-  color:var(--muted);
-}
-.bell-empty{
-  margin:6px 0;
-  font-size:14px;
-  font-style:italic;
-  color:var(--muted);
-  text-align:center;
-}
-
-.bell-list{ display:flex; flex-direction:column; gap:4px; }
-
-.bell-item{
-  display:block;
-  width:100%;
-  text-align:left;
-  font-family:inherit;
-  background:none;
-  border:0;
-  border-radius:var(--r-sm);
-  padding:9px 10px;
-  cursor:pointer;
-  transition:background .14s ease;
-}
-.bell-item:hover{ background:var(--cream); }
-.bell-item.is-new{ background:var(--rose-mist); }
-
-.bell-line{
-  display:block;
-  font-size:13.5px;
-  color:var(--ink);
-}
-.bell-line strong{ color:var(--rose-deep); font-weight:600; }
-
-.bell-quote{
-  display:block;
-  font-family:"Caveat", cursive;
-  font-size:16px;
-  color:var(--ink-soft);
-  margin-top:2px;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-}
-
-.bell-when{
-  display:block;
-  font-size:10.5px;
-  letter-spacing:.12em;
-  text-transform:uppercase;
-  color:var(--muted);
-  margin-top:3px;
-}
-
+/* account avatar */
 .avatar{
   width:42px;
   height:42px;
@@ -351,8 +252,6 @@ body{
 
 @media (max-width:559px){
   .whoami{ top:13px; right:12px; gap:7px; }
-  .bell{ width:34px; height:34px; }
-  .bell svg{ width:17px; height:17px; }
   .avatar{ width:37px; height:37px; font-size:15px; }
   .wordmark{ padding:9px 12px; gap:10px; }
   .wm-a{ font-size:10.5px; letter-spacing:.26em; }
@@ -784,37 +683,45 @@ textarea::placeholder{ color:#C4B4AE; font-style:italic; }
    THE POSTCARD
    ============================================================ */
 
+/* the shadow lives on the wrapper — clip-path (below) would cut a
+   shadow off at the jagged edge if it sat on the same element */
+.postcard-wrap{
+  transform:rotate(var(--tilt, 0deg));
+  transition:transform .3s cubic-bezier(.2,.7,.3,1);
+}
+.postcard-wrap:hover{ transform:rotate(0deg); }
+
+/* a real straight-edged postcard with a slim airmail-style
+   diagonal-striped border running all the way around */
 .postcard{
   position:relative;
   background:
     linear-gradient(160deg, #FFFCF6 0%, #FDF4E9 52%, #FBEDE4 100%);
-  border-radius:var(--r-md);
-  border:1px solid var(--edge-soft);
-  box-shadow:var(--shadow-lift), var(--glow);
-  padding:20px 20px 24px;
-  overflow:hidden;
+  border:9px solid transparent;
+  border-image: repeating-linear-gradient(45deg,
+    var(--rose) 0 9px,
+    var(--gold) 9px 18px,
+    var(--cream) 18px 20px,
+    var(--gold) 20px 22px
+  ) 9;
+  padding:24px 22px 26px;
   isolation:isolate;
+  box-shadow:var(--shadow-lift), var(--glow);
 }
 
-/* faint paper grain */
+/* warm blotches + paper grain */
 .postcard::before{
   content:"";
   position:absolute;
   inset:0;
-  z-index:-1;
-  opacity:.5;
+  z-index:0;
+  opacity:.7;
+  mix-blend-mode:multiply;
   background-image:
-    radial-gradient(circle at 18% 26%, rgba(201,123,132,.07), transparent 42%),
-    radial-gradient(circle at 82% 78%, rgba(214,166,120,.09), transparent 46%);
-}
-
-/* deckled inner keyline */
-.postcard::after{
-  content:"";
-  position:absolute;
-  inset:8px;
-  border:1px solid rgba(201,123,132,.26);
-  border-radius:calc(var(--r-md) - 6px);
+    radial-gradient(circle at 18% 22%, rgba(201,123,132,.08), transparent 42%),
+    radial-gradient(circle at 84% 80%, rgba(214,166,120,.10), transparent 46%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.62  0 0 0 0 0.42  0 0 0 0 0.38  0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:auto, auto, 140px 140px;
   pointer-events:none;
 }
 
@@ -831,22 +738,23 @@ textarea::placeholder{ color:#C4B4AE; font-style:italic; }
 .pc-kicker{
   display:inline-flex;
   align-items:center;
-  gap:7px;
-  padding:6px 11px;
-  font-size:11.5px;
-  letter-spacing:.2em;
+  gap:8px;
+  padding:8px 14px;
+  font-size:14px;
+  letter-spacing:.16em;
   text-transform:uppercase;
-  color:var(--rose-deep);
-  border:1px dashed rgba(198,96,110,.45);
+  border:1px dashed rgba(198,96,110,.5);
   border-radius:3px;
   transform:rotate(-1.2deg);
 }
 .pc-kicker svg{
-  width:12px;
-  height:12px;
+  width:14px;
+  height:14px;
   fill:var(--rose);
   flex:none;
 }
+.pc-kicker-a{ color:var(--ink-soft); font-weight:600; }
+.pc-kicker-b{ color:var(--rose-deep); font-weight:600; margin-left:.35em; }
 
 .pc-date-short{ display:none; }
 
@@ -860,61 +768,72 @@ textarea::placeholder{ color:#C4B4AE; font-style:italic; }
 .pc-frank{
   position:relative;
   flex:none;
-  width:122px;
-  height:98px;
+  width:100px;
+  height:116px;
 }
 
+/* a real postage stamp: perforated edge, illustrated centre, value */
 .pc-stamp{
   position:absolute;
   top:0; right:0;
-  width:72px;
-  height:86px;
-  border-radius:3px;
+  width:92px;
+  height:108px;
   background:linear-gradient(150deg, var(--rose-soft), #F6E3DC);
-  border:3px solid var(--paper);
-  outline:1.5px dashed rgba(201,123,132,.55);
-  outline-offset:-6px;
-  box-shadow:0 2px 6px -2px rgba(160,100,95,.4);
+  border:5px solid var(--paper);
+  filter:drop-shadow(0 2px 3px rgba(120,70,75,.35))
+         drop-shadow(0 5px 10px rgba(160,90,95,.4));
+  clip-path: path("M0 0L10.2 0A6.2 6.2 0 0 0 22.6 0L25 0A6.2 6.2 0 0 0 37.4 0L39.8 0A6.2 6.2 0 0 0 52.2 0L54.6 0A6.2 6.2 0 0 0 67 0L69.4 0A6.2 6.2 0 0 0 81.8 0L92 0L92 10.3A6.2 6.2 0 0 0 92 22.7L92 25.3A6.2 6.2 0 0 0 92 37.7L92 40.3A6.2 6.2 0 0 0 92 52.7L92 55.3A6.2 6.2 0 0 0 92 67.7L92 70.3A6.2 6.2 0 0 0 92 82.7L92 85.3A6.2 6.2 0 0 0 92 97.7L92 108L81.8 108A6.2 6.2 0 0 0 69.4 108L67 108A6.2 6.2 0 0 0 54.6 108L52.2 108A6.2 6.2 0 0 0 39.8 108L37.4 108A6.2 6.2 0 0 0 25 108L22.6 108A6.2 6.2 0 0 0 10.2 108L0 108L0 97.7A6.2 6.2 0 0 0 0 85.3L0 82.7A6.2 6.2 0 0 0 0 70.3L0 67.7A6.2 6.2 0 0 0 0 55.3L0 52.7A6.2 6.2 0 0 0 0 40.3L0 37.7A6.2 6.2 0 0 0 0 25.3L0 22.7A6.2 6.2 0 0 0 0 10.3Z");
+  box-shadow:0 3px 8px -2px rgba(160,100,95,.45);
   transform:rotate(3.5deg);
-  display:grid;
-  place-items:center;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
   text-align:center;
 }
+.pc-stamp svg{
+  width:30px;
+  height:30px;
+  fill:var(--rose-deep);
+  opacity:.85;
+}
 .pc-stamp span{
-  font-size:11px;
-  letter-spacing:.1em;
+  font-size:16px;
+  font-weight:600;
+  letter-spacing:.08em;
   line-height:1.25;
   color:var(--rose-deep);
   text-transform:uppercase;
 }
 
-.pc-postmark{
-  position:absolute;
-  top:18px; left:-4px;
-  color:var(--rose-deep);
-  opacity:.34;
-  transform:rotate(-13deg);
-  pointer-events:none;
-}
 
 .pc-question{
   font-style:italic;
-  font-size:17.5px;
-  line-height:1.4;
-  color:var(--ink-soft);
+  font-size:21px;
+  line-height:1.38;
+  color:var(--ink);
   text-align:center;
-  padding:20px 12px 4px;
+  padding:22px 12px 4px;
   margin:0;
   text-wrap:balance;
 }
 
+/* a real printed postcard rule: a hairline paired with a lighter
+   twin, not the dashed "cut here" line this used to be */
 .pc-divider{
+  position:relative;
+  height:2px;
+  margin:18px 4px 20px;
+  background:rgba(198,96,110,.5);
+}
+.pc-divider::after{
+  content:"";
+  position:absolute;
+  left:0; right:0;
+  top:4px;
   height:1px;
-  background:repeating-linear-gradient(
-    to right,
-    rgba(201,123,132,.4) 0 6px,
-    transparent 6px 12px);
-  margin:18px 8px;
+  background:rgba(198,96,110,.22);
 }
 
 .pc-notes{
@@ -1027,11 +946,39 @@ textarea::placeholder{ color:#C4B4AE; font-style:italic; }
   color:#4E3B42;
 }
 
+/* the "read the rest" link on a long answer */
+.show-more{
+  display:block;
+  margin:2px 0 0;
+  font-family:inherit;
+  font-size:13px;
+  letter-spacing:.04em;
+  color:var(--rose-deep);
+  background:none;
+  border:0;
+  padding:0;
+  text-decoration:underline;
+  text-underline-offset:3px;
+  text-decoration-color:var(--rose-soft);
+  cursor:pointer;
+}
+.show-more:hover{ text-decoration-color:var(--rose); }
+
+/* signed off like the end of a letter */
+.pc-sign{
+  font-family:"Caveat", cursive;
+  font-size:22px;
+  color:var(--rose-deep);
+  text-align:right;
+  margin-top:4px;
+  opacity:.9;
+}
+
 /* wider screens: true two-panel postcard */
 @media (min-width:560px){
   .postcard{ padding:24px 26px 30px; }
   .pc-notes{
-    grid-template-columns:1fr 1px 1fr;
+    grid-template-columns:1fr 10px 1fr;
     gap:0;
     align-items:start;
   }
@@ -1039,27 +986,89 @@ textarea::placeholder{ color:#C4B4AE; font-style:italic; }
   .pc-note:first-child{ padding-left:6px; }
   .pc-note:last-child{ padding-right:6px; }
   .pc-vline{
-    background:repeating-linear-gradient(
-      to bottom,
-      rgba(201,123,132,.4) 0 6px,
-      transparent 6px 12px);
+    position:relative;
+    width:2px;
+    background:rgba(198,96,110,.5);
     align-self:stretch;
     min-height:120px;
   }
+  .pc-vline::after{
+    content:"";
+    position:absolute;
+    top:0; bottom:0;
+    left:5px;
+    width:1px;
+    background:rgba(198,96,110,.22);
+  }
 }
 @media (max-width:559px){
-  .pc-vline{ display:none; }
+  /* On a narrow screen the two answers were just stacked
+     paragraphs with a gap — nothing said "these are two separate
+     people" or "this is a postcard." Each answer becomes its own
+     tilted note resting on the card, with a proper ornamental
+     divider (not just whitespace) between them. */
+  .pc-notes{ gap:0; padding:0 4px; }
+
+  .pc-note{
+    position:relative;
+    background:rgba(255, 253, 249, .6);
+    border:1px solid rgba(198,96,110,.2);
+    border-radius:16px;
+    padding:18px 18px 16px;
+    box-shadow:0 3px 10px -6px rgba(140,90,85,.35);
+  }
+  .pc-note--l{ transform:rotate(-.6deg); }
+  .pc-note--r{ transform:rotate(.6deg); }
+
+  .pc-note--l{ background:linear-gradient(165deg, rgba(255,253,249,.75), rgba(253,244,233,.55)); }
+  .pc-note--r{ background:linear-gradient(165deg, rgba(255,253,249,.75), rgba(250,236,234,.55)); }
+
+  .pc-from{
+    font-size:12px;
+    letter-spacing:.18em;
+  }
+
+  /* the ornamental divider between the two notes, replacing the
+     vertical rule that only made sense in the two-column layout */
+  .pc-vline{
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    height:1px;
+    margin:22px auto;
+    width:calc(100% - 8px);
+    background:rgba(198,96,110,.32);
+  }
+  .pc-vline::after{
+    content:"\2764";
+    position:relative;
+    display:grid;
+    place-items:center;
+    width:26px;
+    height:26px;
+    border-radius:50%;
+    background:var(--cream);
+    border:1px solid rgba(198,96,110,.3);
+    color:var(--rose);
+    font-size:11px;
+    box-shadow:0 1px 3px rgba(140,90,85,.2);
+  }
 
   /* keep the header on one line each at phone width */
-  .pc-kicker{ font-size:9.5px; padding:5px 9px; gap:6px; letter-spacing:.16em; }
-  .pc-kicker svg{ width:10px; height:10px; }
+  .pc-kicker{ font-size:11px; padding:6px 10px; gap:6px; letter-spacing:.14em; }
+  .pc-kicker svg{ width:11px; height:11px; }
   .pc-date{ font-size:16px; margin-top:5px; }
   .pc-date-full{ display:none; }
   .pc-date-short{ display:inline; }
-  .pc-frank{ width:96px; height:80px; }
-  .pc-stamp{ width:58px; height:70px; }
-  .pc-stamp span{ font-size:9.5px; }
-  .pc-question{ font-size:16px; }
+  .pc-frank{ width:80px; height:92px; }
+  .pc-stamp{
+    width:72px; height:84px;
+    clip-path: path("M0 0L10.2 0A4.8 4.8 0 0 0 19.8 0L24.2 0A4.8 4.8 0 0 0 33.8 0L38.2 0A4.8 4.8 0 0 0 47.8 0L52.2 0A4.8 4.8 0 0 0 61.8 0L72 0L72 10A4.8 4.8 0 0 0 72 19.6L72 23.6A4.8 4.8 0 0 0 72 33.2L72 37.2A4.8 4.8 0 0 0 72 46.8L72 50.8A4.8 4.8 0 0 0 72 60.4L72 64.4A4.8 4.8 0 0 0 72 74L72 84L61.8 84A4.8 4.8 0 0 0 52.2 84L47.8 84A4.8 4.8 0 0 0 38.2 84L33.8 84A4.8 4.8 0 0 0 24.2 84L19.8 84A4.8 4.8 0 0 0 10.2 84L0 84L0 74A4.8 4.8 0 0 0 0 64.4L0 60.4A4.8 4.8 0 0 0 0 50.8L0 46.8A4.8 4.8 0 0 0 0 37.2L0 33.2A4.8 4.8 0 0 0 0 23.6L0 19.6A4.8 4.8 0 0 0 0 10Z");
+  }
+  .pc-stamp svg{ width:24px; height:24px; }
+  .pc-stamp span{ font-size:13.5px; font-weight:600; }
+  .pc-question{ font-size:18px; }
   .pc-snap{ width:118px; padding:7px 7px 6px; }
   .snap-time{ font-size:15px; padding:8px 2px 4px; }
   .pc-note--l .pc-snap{ margin:14px auto 0 -2px; }
@@ -1239,6 +1248,74 @@ textarea::placeholder{ color:#C4B4AE; font-style:italic; }
 
 .rp-error{ margin-top:10px; margin-bottom:0; }
 
+/* ---------- full-answer modal ---------- */
+
+body.modal-open{ overflow:hidden; }
+
+.modal-overlay{
+  position:fixed;
+  inset:0;
+  z-index:100;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  background:rgba(58, 46, 44, .38);
+  backdrop-filter:blur(3px);
+  -webkit-backdrop-filter:blur(3px);
+  animation:rise .18s ease both;
+}
+.modal-overlay[hidden]{ display:none; }
+
+.modal-card{
+  position:relative;
+  width:100%;
+  max-width:460px;
+  max-height:80vh;
+  overflow-y:auto;
+  background:linear-gradient(160deg, #FFFCF6 0%, #FDF4E9 52%, #FBEDE4 100%);
+  border-radius:var(--r-lg);
+  border:1px solid var(--edge-soft);
+  box-shadow:var(--shadow-lift), var(--glow);
+  padding:34px 28px 30px;
+}
+
+.modal-close{
+  position:absolute;
+  top:14px; right:14px;
+  width:32px;
+  height:32px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  color:var(--rose-deep);
+  background:var(--rose-mist);
+  border:0;
+  cursor:pointer;
+  transition:background .16s ease;
+}
+.modal-close:hover{ background:var(--rose-soft); }
+.modal-close svg{ width:15px; height:15px; }
+
+.modal-from{
+  font-size:11px;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  color:var(--rose-deep);
+  margin-bottom:14px;
+}
+
+.modal-answer{
+  font-family:"Caveat", cursive;
+  font-size:26px;
+  line-height:1.42;
+  color:var(--ink);
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+
+.modal-card .pc-sign{ margin-top:14px; }
+
 /* ---------- remove-answer confirm ---------- */
 
 .reveal-foot{
@@ -1312,12 +1389,6 @@ textarea::placeholder{ color:#C4B4AE; font-style:italic; }
   gap:26px;
 }
 
-.archive-list .postcard{
-  transform:rotate(var(--tilt, 0deg));
-  transition:transform .3s cubic-bezier(.2,.7,.3,1);
-}
-.archive-list .postcard:hover{ transform:rotate(0deg); }
-
 .empty{
   text-align:center;
   padding:46px 24px;
@@ -1347,7 +1418,7 @@ textarea::placeholder{ color:#C4B4AE; font-style:italic; }
 
 @media (prefers-reduced-motion:reduce){
   *{ animation:none !important; transition:none !important; }
-  .archive-list .postcard{ transform:none; }
+  .postcard-wrap{ transform:none !important; }
 }
 
 /* the wordmark gets the faintest halo */

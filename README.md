@@ -87,7 +87,9 @@ Open it to:
   are tinted differently from theirs.
 
 The button shows a count of replies — **Respond 1**, **Respond 2**, and so on —
-so you can see there's something waiting without opening it.
+so you can see there's something waiting without opening it. There's no
+push notification for a new reaction or reply; you'll see it next time either
+of you opens the site, since it refetches automatically (see below).
 
 The emoji row is yours to edit, in `config.js`:
 
@@ -107,21 +109,14 @@ refetches everything — a new answer, reaction, or reply shows up without you
 reloading. Anything you were part-way through typing is preserved across that
 refresh, so it can't eat a draft.
 
-## Notifications
+## Long answers
 
-The bell in the top right shows a red dot when the other person has reacted or
-replied to something of yours since you last looked. Open it for the list;
-opening it clears the dot. Tapping an entry jumps to the right tab.
-
-Two things to know:
-
-- **These are in-app only, not phone push notifications.** Real push needs a
-  server to send it, and this site has no backend — it's static files talking
-  straight to Supabase. You'll see the dot when you open the site.
-- **Unread state is per-device**, kept in your browser alongside your account
-  choice. Your phone and laptop track it separately.
-
----
+Answers up to a few sentences (roughly 300 characters) always show in full.
+Past that, the card shows a preview and a **Show more** link that opens the
+whole thing in a popup — so one long answer can't stretch the card
+indefinitely or crowd out everything below it. The cutoff is
+`ANSWER_TRUNCATE_AT` near the top of `app.js` if you want it longer or
+shorter.
 
 ## Times on postcards
 

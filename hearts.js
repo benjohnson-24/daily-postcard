@@ -24,7 +24,7 @@
     driftSpeed:   0.14,   // how fast they float upward
     repelRadius:  130,    // how close the cursor gets before they move
     repelForce:   0.9,    // how hard they're pushed
-    burstCount:   18,     // hearts per click explosion
+    burstCount:   9,      // hearts per click explosion
     burstSpeed:   5.0,    // how far they fly
     burstMinSize: 7,      // smallest heart in the burst
     burstMaxSize: 17      // largest

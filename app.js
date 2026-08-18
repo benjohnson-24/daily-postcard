@@ -27,6 +27,9 @@
   var RP = {};          // -> [{author, body, at}]
   var openPanel = "";   // which respond panel is showing, so a
                         // re-render can put it back
+  var picking = false;  // true while the camera or photo picker is up:
+                        // on iOS that backgrounds Safari, and the focus
+                        // event on return must not trigger a refresh
 
   /* ---------- tiny helpers ---------- */
 
@@ -34,6 +37,19 @@
     return String(s == null ? "" : s)
       .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  // Only kicks in on genuinely long answers — comfortably fits
+  // several sentences before a "Show more" ever appears.
+  var ANSWER_TRUNCATE_AT = 320;   // longer than this -> truncate
+  var ANSWER_PREVIEW_LEN = 260;   // how much shows before "..."
+
+  function truncateAnswer(text) {
+    if (!text || text.length <= ANSWER_TRUNCATE_AT) return null;
+    var cut = text.slice(0, ANSWER_PREVIEW_LEN);
+    var lastSpace = cut.lastIndexOf(" ");
+    if (lastSpace > ANSWER_PREVIEW_LEN * 0.6) cut = cut.slice(0, lastSpace);
+    return cut.replace(/[.,;:!?\s]*$/, "") + "\u2026";
   }
 
   function slug(s) {
@@ -121,94 +137,13 @@
 
   /* ---------- who's using this phone ---------- */
 
-  /* ---------- notifications ---------- */
-
-  function seenKey() { return "dp:seen:" + savedName(); }
-
-  function lastSeen() {
-    try { return localStorage.getItem(seenKey()) || "1970-01-01T00:00:00Z"; }
-    catch (e) { return "1970-01-01T00:00:00Z"; }
-  }
-
-  function markSeen() {
-    try { localStorage.setItem(seenKey(), new Date().toISOString()); } catch (e) {}
-  }
-
-  // Everything the other person has done to a thread that's yours —
-  // either it hangs off your answer, or you've replied in it.
-  function activityForMe() {
-    var me = savedName();
-    if (!me) return [];
-    var items = [];
-
-    Object.keys(RX).forEach(function (k) {
-      var parts = k.split("|"), date = parts[0], target = parts[1];
-      if (target !== me) return;
-      RX[k].forEach(function (r) {
-        if (r.author === me) return;
-        items.push({ kind: "reaction", date: date, target: target,
-                     who: r.author, what: r.emojis, at: r.at });
-      });
-    });
-
-    Object.keys(RP).forEach(function (k) {
-      var parts = k.split("|"), date = parts[0], target = parts[1];
-      var mineThread = target === me || RP[k].some(function (r) {
-        return r.author === me;
-      });
-      if (!mineThread) return;
-      RP[k].forEach(function (r) {
-        if (r.author === me) return;
-        items.push({ kind: "reply", date: date, target: target,
-                     who: r.author, what: r.body, at: r.at });
-      });
-    });
-
-    items.sort(function (a, b) { return (a.at < b.at) ? 1 : -1; });
-    return items;
-  }
-
   function paintWhoami() {
     var bar = document.getElementById("whoami");
     if (!bar) return;
     var me = savedName();
     if (!me) { bar.innerHTML = ""; return; }
 
-    var items  = activityForMe();
-    var since  = lastSeen();
-    var unseen = items.filter(function (i) { return i.at > since; });
-
     bar.innerHTML =
-      '<button class="bell" id="bell-btn" aria-label="Notifications">' +
-        '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
-          '<path d="M18 8.8a6 6 0 1 0-12 0c0 5.2-2 6.6-2 6.6h16s-2-1.4-2-6.6z" ' +
-            'stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>' +
-          '<path d="M13.7 19a2 2 0 0 1-3.4 0" stroke="currentColor" ' +
-            'stroke-width="1.6" stroke-linecap="round"/>' +
-        "</svg>" +
-        (unseen.length ? '<span class="bell-dot"></span>' : "") +
-      "</button>" +
-      '<div class="bell-pop" id="bell-pop" hidden>' +
-        '<p class="bell-head">Activity</p>' +
-        (items.length
-          ? '<div class="bell-list">' + items.slice(0, 12).map(function (i) {
-              var fresh = i.at > since ? " is-new" : "";
-              return '<button type="button" class="bell-item' + fresh +
-                  '" data-date="' + esc(i.date) + '">' +
-                '<span class="bell-line"><strong>' + esc(i.who) + "</strong> " +
-                  (i.kind === "reaction"
-                    ? "reacted " + esc(i.what)
-                    : "replied") +
-                  (i.target === savedName() ? " to your answer" : "") +
-                "</span>" +
-                (i.kind === "reply"
-                  ? '<span class="bell-quote">' + esc(i.what) + "</span>"
-                  : "") +
-                '<span class="bell-when">' + esc(prettyDate(i.date)) + "</span>" +
-              "</button>";
-            }).join("") + "</div>"
-          : '<p class="bell-empty">Nothing yet.</p>') +
-      "</div>" +
       '<button class="avatar" id="avatar-btn" ' +
         'aria-label="Signed in as ' + esc(me) + '">' +
         esc(me.charAt(0).toUpperCase()) +
@@ -218,51 +153,25 @@
         '<button class="avatar-switch" id="avatar-switch">Switch account</button>' +
       "</div>";
 
-    var btn     = document.getElementById("avatar-btn");
-    var pop     = document.getElementById("avatar-pop");
-    var bellBtn = document.getElementById("bell-btn");
-    var bellPop = document.getElementById("bell-pop");
+    var btn = document.getElementById("avatar-btn");
+    var pop = document.getElementById("avatar-pop");
 
     function close() {
       pop.hidden = true;
-      bellPop.hidden = true;
       document.removeEventListener("pointerdown", away, true);
     }
     function away(e) {
       if (!bar.contains(e.target)) close();
     }
-    function open(which) {
-      pop.hidden = which !== pop;
-      bellPop.hidden = which !== bellPop;
-      document.addEventListener("pointerdown", away, true);
-    }
 
     btn.onclick = function () {
-      if (pop.hidden) open(pop); else close();
-    };
-
-    bellBtn.onclick = function () {
-      if (bellPop.hidden) {
-        open(bellPop);
-        // Opening the list is what counts as reading it.
-        markSeen();
-        var dot = bellBtn.querySelector(".bell-dot");
-        if (dot) dot.remove();
+      if (pop.hidden) {
+        pop.hidden = false;
+        document.addEventListener("pointerdown", away, true);
       } else {
         close();
       }
     };
-
-    Array.prototype.forEach.call(bar.querySelectorAll(".bell-item"),
-      function (b) {
-        b.onclick = function () {
-          close();
-          var isToday = b.dataset.date === todayKey();
-          var tab = document.querySelector(
-            '[data-tab="' + (isToday ? "today" : "archive") + '"]');
-          if (tab) tab.click();
-        };
-      });
 
     document.getElementById("avatar-switch").onclick = function () {
       close();
@@ -490,11 +399,9 @@
 
   /* ---------- postcard markup ---------- */
 
-  var POSTMARK =
-    '<svg class="pc-postmark" width="78" height="78" viewBox="0 0 62 62" aria-hidden="true">' +
-      '<circle cx="31" cy="31" r="27" fill="none" stroke="currentColor" stroke-width="1.6"/>' +
-      '<circle cx="31" cy="31" r="21" fill="none" stroke="currentColor" stroke-width="1"/>' +
-      '<path d="M8 22h46M8 40h46" stroke="currentColor" stroke-width="1.2" opacity=".8"/>' +
+  var STAMP_HEART =
+    '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+      '<path d="M12 19.4c-5.4-3.9-8-6.8-8-9.9A4.4 4.4 0 0 1 12 6.3a4.4 4.4 0 0 1 8 3.2c0 3.1-2.6 6-8 9.9z"/>' +
     "</svg>";
 
   function snapshot(url, tilt, at) {
@@ -583,7 +490,18 @@
       var stamped = clockTime(row.at);
       return '<div class="pc-note ' + (i === 0 ? "pc-note--l" : "pc-note--r") + '">' +
         '<div class="pc-from">From ' + esc(n) + "</div>" +
-        '<div class="pc-answer">' + esc(row.answer) + "</div>" +
+        (function () {
+          var preview = truncateAnswer(row.answer);
+          if (!preview) {
+            return '<div class="pc-answer">' + esc(row.answer) + "</div>";
+          }
+          return '<div class="pc-answer">' + esc(preview) + "</div>" +
+            '<button type="button" class="show-more" ' +
+              'data-who="' + esc(n) + '" data-full="' + esc(row.answer) + '">' +
+              "Show more" +
+            "</button>";
+        })() +
+        '<div class="pc-sign">\u2014 ' + esc(n) + "</div>" +
         // With a photo the time lives on the polaroid's white strip;
         // without one it sits quietly under the handwriting.
         (row.photo
@@ -593,12 +511,15 @@
       "</div>";
     }).join('<div class="pc-vline"></div>');
 
-    return '<article class="postcard">' +
+    return '<div class="postcard-wrap">' +
+      '<article class="postcard">' +
       '<div class="pc-head">' +
         '<div class="pc-meta">' +
           '<div class="pc-kicker">' +
             '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.6c-6.1-4.4-9.1-7.7-9.1-11.3A5.05 5.05 0 0 1 12 6.3a5.05 5.05 0 0 1 9.1 3c0 3.6-3 6.9-9.1 11.3z"/></svg>' +
-            "Daily Postcard</div>" +
+            '<span class="pc-kicker-a">Daily</span>' +
+            '<span class="pc-kicker-b">Postcard</span>' +
+          "</div>" +
           '<div class="pc-date">' +
             '<span class="pc-date-full">' +
               esc(prettyDate(key, { year: "numeric" })) + "</span>" +
@@ -606,14 +527,17 @@
               esc(prettyDate(key, { weekday: undefined, year: "numeric" })) + "</span>" +
           "</div>" +
         "</div>" +
-        '<div class="pc-frank">' + POSTMARK +
-          '<div class="pc-stamp"><span>' + esc(shortDate(key)) + "</span></div>" +
+        '<div class="pc-frank">' +
+          '<div class="pc-stamp">' + STAMP_HEART +
+            "<span>" + esc(shortDate(key)) + "</span>" +
+          "</div>" +
         "</div>" +
       "</div>" +
       '<p class="pc-question">' + esc(question) + "</p>" +
       '<div class="pc-divider"></div>' +
       '<div class="pc-notes">' + notes + "</div>" +
-    "</article>";
+      "</article>" +
+    "</div>";
   }
 
   /* ============================================================
@@ -691,8 +615,46 @@
     });
   }
 
+  /* ---------- the "Show more" modal ---------- */
+
+  var modalOverlay, modalFrom, modalBody, modalCloseBtn;
+
+  function openAnswerModal(who, fullText) {
+    if (!modalOverlay) {
+      modalOverlay  = document.getElementById("answer-modal");
+      modalFrom     = document.getElementById("modal-from");
+      modalBody     = document.getElementById("modal-body");
+      modalCloseBtn = document.getElementById("modal-close");
+      modalCloseBtn.onclick = closeAnswerModal;
+      modalOverlay.addEventListener("click", function (e) {
+        if (e.target === modalOverlay) closeAnswerModal();
+      });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && !modalOverlay.hidden) closeAnswerModal();
+      });
+    }
+    modalFrom.textContent = "From " + who;
+    modalBody.innerHTML =
+      '<div class="modal-answer">' + esc(fullText) + "</div>" +
+      '<div class="pc-sign">\u2014 ' + esc(who) + "</div>";
+    modalOverlay.hidden = false;
+    document.body.classList.add("modal-open");
+  }
+
+  function closeAnswerModal() {
+    if (modalOverlay) modalOverlay.hidden = true;
+    document.body.classList.remove("modal-open");
+  }
+
   // Called after any render that contains postcards.
   function wireResponses(root, rerender) {
+    Array.prototype.forEach.call(root.querySelectorAll(".show-more"),
+      function (btn) {
+        btn.onclick = function () {
+          openAnswerModal(btn.dataset.who, btn.dataset.full);
+        };
+      });
+
     Array.prototype.forEach.call(root.querySelectorAll(".respond"),
       function (box) {
         var date   = box.dataset.date;
@@ -871,7 +833,9 @@
       return;
     }
 
-    clearPending();
+    // Deliberately NOT clearing the pending photo here: a refresh
+    // (or coming back from the iPhone camera) re-renders, and that
+    // must never throw away a picture you haven't sent yet.
     renderForm("", "");
   }
 
@@ -916,10 +880,12 @@
             "Remove photo</button>" +
         "</div>";
       document.getElementById("photo-retake").onclick = function () {
-        if (canUseWebcam()) openCamera(existing);
-        else document.getElementById("photo-cam").click();
+        if (canUseWebcam()) { openCamera(existing); return; }
+        picking = true;
+        document.getElementById("photo-cam").click();
       };
       document.getElementById("photo-lib-btn").onclick = function () {
+        picking = true;
         document.getElementById("photo-lib").click();
       };
       document.getElementById("photo-drop").onclick = function () {
@@ -936,10 +902,12 @@
           LIBRARY_ICON + "<span>Choose from camera roll</span>" +
         "</button>";
       document.getElementById("photo-shoot").onclick = function () {
-        if (canUseWebcam()) openCamera(existing);
-        else document.getElementById("photo-cam").click();
+        if (canUseWebcam()) { openCamera(existing); return; }
+        picking = true;
+        document.getElementById("photo-cam").click();
       };
       document.getElementById("photo-pick").onclick = function () {
+        picking = true;
         document.getElementById("photo-lib").click();
       };
     }
@@ -976,7 +944,7 @@
 
     function tookPhoto(input) {
       var f = input.files && input.files[0];
-      input.value = "";              // so picking the same file twice works
+      picking = false;
       if (!f) return;
 
       var err = document.getElementById("form-error");
@@ -988,7 +956,11 @@
         state.photoPreview = URL.createObjectURL(blob);
         err.innerHTML = "";
         paintPhotoSlot(existingPhoto);
+        // Only now is it safe to let the input go. Clearing it before
+        // the file is read can drop the picture on iOS.
+        input.value = "";
       }).catch(function (e) {
+        input.value = "";
         err.innerHTML = '<div class="alert"><strong>Couldn’t use that photo.</strong> ' +
           esc(e.message || e) + "</div>";
       });
@@ -1135,8 +1107,8 @@
                   days[d][NAMES[1]].question ||
                   questionFor(d);
           return postcard(d, q, byName).replace(
-            '<article class="postcard">',
-            '<article class="postcard" style="--tilt:' + tilts[i % tilts.length] + 'deg">'
+            '<div class="postcard-wrap">',
+            '<div class="postcard-wrap" style="--tilt:' + tilts[i % tilts.length] + 'deg">'
           );
         }).join("");
 
@@ -1202,6 +1174,8 @@
 
     function softRefresh() {
       if (document.hidden) return;
+      if (picking) { picking = false; return; }   // just back from the camera
+      if (state.photoBlob) return;                // a photo is waiting to send
       var now = Date.now();
       if (now - lastRefresh < 4000) return;      // don't thrash
       lastRefresh = now;
