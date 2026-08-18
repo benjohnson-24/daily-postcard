@@ -1,0 +1,13 @@
+.DS_Store
+Thumbs.db
+*.log
+
+# NOTE: config.js is intentionally NOT ignored.
+#
+# GitHub Pages serves plain static files, so the site can only read
+# your Supabase URL + publishable key if they're committed. The
+# publishable key is designed to ship in public code — that's the
+# whole point of it. Your database is protected by the Row Level
+# Security policies in schema.sql, not by hiding this file.
+#
+# Never commit the SECRET key (sb_secret_...).

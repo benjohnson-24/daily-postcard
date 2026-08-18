@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FBF5EE">
+<title>Daily Postcard</title>
+<meta name="description" content="One question a day, answered separately, revealed together.">
+
+<!-- tab + home screen icons -->
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="icon-512.png" type="image/png" sizes="512x512">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+
+<!-- Add to Home Screen on iOS: open full-screen, no browser bars -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Daily Postcard">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+<!-- what shows when the link gets texted -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Daily Postcard">
+<meta property="og:description" content="One question a day, answered separately, revealed together.">
+<meta property="og:image" content="preview.png">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <canvas id="hearts" aria-hidden="true"></canvas>
+  <canvas id="sparks" aria-hidden="true"></canvas>
+
+  <div class="wrap">
+
+    <header class="masthead">
+      <div class="wordmark">
+        <span class="wm-text">
+          <span class="wm-a">Daily</span>
+          <span class="wm-b">Postcard</span>
+        </span>
+        <svg class="wm-heart" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 20.6c-6.1-4.4-9.1-7.7-9.1-11.3A5.05 5.05 0 0 1 12 6.3a5.05 5.05 0 0 1 9.1 3c0 3.6-3 6.9-9.1 11.3z"/>
+        </svg>
+      </div>
+      <nav class="tabs" role="tablist">
+        <button class="tab is-active" data-tab="today"   role="tab">Today</button>
+        <button class="tab"           data-tab="archive" role="tab">Postcards</button>
+      </nav>
+      <div class="whoami" id="whoami"></div>
+    </header>
+
+    <main>
+      <section id="view-today" class="view">
+        <div id="today-body">
+          <p class="placeholder">Opening the mailbox&hellip;</p>
+        </div>
+      </section>
+
+      <section id="view-archive" class="view is-hidden">
+        <div id="archive-body">
+          <p class="placeholder">Opening the mailbox&hellip;</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="colophon">
+      <span id="footer-note">two campuses, one question a day</span>
+    </footer>
+
+  </div>
+
+  <script src="hearts.js"></script>
+  <script src="config.js"></script>
+  <script src="questions.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "Daily Postcard",
+  "short_name": "Postcard",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#FBF5EE",
+  "theme_color": "#FBF5EE",
+  "icons": [
+    { "src": "apple-touch-icon.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
